@@ -5,7 +5,7 @@ namespace ScriptKit
 {
     internal static class NativeMethods
     {
-        private const string lib = "ChakraCore.dll";
+        private const string lib = "ChakraCore";
 
         [DllImport(lib)]
         internal static extern JsErrorCode
@@ -13,6 +13,35 @@ namespace ScriptKit
             JsRuntimeAttributes attributes,
             JsThreadServiceCallback threadService,
             out IntPtr runtime);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDisposeRuntime(
+            IntPtr runtime);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCollectGarbage(IntPtr runtime);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetRuntimeMemoryUsage(
+    IntPtr runtime,
+            out IntPtr memoryUsage);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsSetRuntimeMemoryLimit(
+            IntPtr runtime,
+            IntPtr memoryLimit);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsGetRuntimeMemoryLimit(
+            IntPtr runtime,
+            out IntPtr memoryLimit);
+
+
 
         [DllImport(lib)]
         internal static extern JsErrorCode
@@ -292,6 +321,23 @@ namespace ScriptKit
         JsCreateArray(
             uint length,
             out IntPtr result);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateObject(out IntPtr obj);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsInstanceOf(
+            IntPtr obj,
+            IntPtr constructor,
+            out bool result);
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetOwnPropertyDescriptor(
+            IntPtr obj,
+            IntPtr propertyId,
+            out IntPtr propertyDescriptor);
 
     }
 }

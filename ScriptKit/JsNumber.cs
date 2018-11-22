@@ -1,9 +1,9 @@
 ﻿using System;
 namespace ScriptKit
 {
-    public class JsNumber:JsObject
+    public class JsNumber:JsValue
     {
-        public JsNumber(int intValue)
+        internal JsNumber(int intValue)
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsIntToNumber(intValue, out value);
@@ -40,25 +40,7 @@ namespace ScriptKit
             return value;
         }
 
-        public static implicit operator double(JsNumber jsNumber)
-        {
-            return jsNumber.ToDouble();
-        }
 
-        public static implicit operator JsNumber(double value)
-        {
-            return new JsNumber(value);
-        }
-
-        public static implicit operator int(JsNumber jsNumber)
-        {
-            return jsNumber.ToInt32();
-        }
-
-        public static implicit operator JsNumber(int value)
-        {
-            return new JsNumber(value);
-        }
 
     }
 }

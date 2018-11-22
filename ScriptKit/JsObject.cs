@@ -3,118 +3,24 @@ using System.Text;
 
 namespace ScriptKit
 {
-    public  class JsObject
+    public  class JsObject:JsValue
     {
         public JsObject()
         {
-            
+            IntPtr obj = IntPtr.Zero;
+            JsErrorCode jsErrorCode = NativeMethods.JsCreateObject(out obj);
+            JsException.ThrowIfHasError(jsErrorCode);
+            this.Value = obj;
         }
 
-        private  JsObject(IntPtr value)
+
+        internal JsObject(IntPtr value)
         {
             this.Value = value;
         }
 
-        public static JsObject FromIntPtr(IntPtr value)
-        {
-            JsValueType jsValueType = JsValueType.JsUndefined;
-            JsErrorCode jsErrorCode = NativeMethods.JsGetValueType(value, out jsValueType);
-            JsException.ThrowIfHasError(jsErrorCode);
-            JsObject jsObject = null;
-            switch (jsValueType)
-            {
-                case JsValueType.JsUndefined:
-                    jsObject = new JsObject(value);
-                    break;
-                case JsValueType.JsNull:
-                    jsObject = new JsObject(value);
-                    break;
-                case JsValueType.JsNumber:
-                    jsObject = new JsNumber(value);
-                    break;
-                case JsValueType.JsString:
-                    jsObject = new JsString(value);
-                    break;
-                case JsValueType.JsBoolean:
-                    jsObject = new JsBoolean(value);
-                    break;
-                case JsValueType.JsObject:
-                    jsObject = new JsObject(value);
-                    break;
-                case JsValueType.JsFunction:
-                    jsObject = new JsFunction(value);
-                    break;
-                case JsValueType.JsError:
-                    jsObject = new JsError(value);
-                    break;
-                case JsValueType.JsArray:
-                    jsObject = new JsArray(value);
-                    break;
-                case JsValueType.JsSymbol:
-                    jsObject = new JsSymbol(value);
-                    break;
-                case JsValueType.JsArrayBuffer:
-                    jsObject = new JsArrayBuffer(value);
-                    break;
-                case JsValueType.JsTypedArray:
-                    jsObject = new JsTypedArray(value);
-                    break;
-                case JsValueType.JsDataView:
-                    jsObject = new JsDataView(value);
-                    break;
-                default:
-                    break;
-            }
-            return jsObject;
-        }
 
-        public static IntPtr ToIntPtr(JsObject jsObject)
-        {
-            if (jsObject == null)
-            {
-                return IntPtr.Zero;
-            }
-            return jsObject.Value;
-        }
-
-
-        protected internal IntPtr Value { get; protected set; }
-
-        public  string ConverToString()
-        {
-            return this.ConvertToJsString().ToString();
-        }
-        public  JsNumber ConvertToJsNumber()
-        {
-            IntPtr value = IntPtr.Zero;
-            JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToNumber(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
-            return new JsNumber(value);
-        }
-        public  JsBoolean ConvertToJsBoolean()
-        {
-            IntPtr value = IntPtr.Zero;
-            JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToBoolean(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
-            return new JsBoolean(value);
-        }
-        public  JsString ConvertToJsString()
-        {
-            IntPtr value = IntPtr.Zero;
-            JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToString(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
-            return new JsString(value);
-        }
-        public JsObject ConverToJsObject()
-        {
-            if (this.ValueType == JsValueType.JsObject)
-            {
-                return this;
-            }
-            IntPtr value = IntPtr.Zero;
-            JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToObject(this.Value, out value);
-            return new JsObject(value);
-        }
+    
 
         public JsObject Prototype
         {
@@ -132,29 +38,7 @@ namespace ScriptKit
             }
         }
 
-        public JsContext Context
-        {
-            get
-            {
-                return JsRuntime.GetContextOfObject(this);
-            }
-        }
 
-        public JsValueType ValueType
-        {
-            get
-            {
-                JsValueType jsValueType = JsValueType.JsUndefined;
-                JsErrorCode jsErrorCode= NativeMethods.JsGetValueType(this.Value, out jsValueType);
-                JsException.ThrowIfHasError(jsErrorCode);
-                return jsValueType;
-            }
-        }
-
-        public override string ToString()
-        {
-            return this.ConverToString();
-        }
 
         public string[] OwnPropertyNames
         {
@@ -163,7 +47,7 @@ namespace ScriptKit
                 IntPtr propertyNames = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetOwnPropertyNames(this.Value, out propertyNames);
                 JsException.ThrowIfHasError(jsErrorCode);
-                JsArray jsArray = JsObject.FromIntPtr(propertyNames) as JsArray;
+                JsArray jsArray = FromIntPtr(propertyNames) as JsArray;
                 int length = jsArray["length"].ConvertToJsNumber().ToInt32();
                 string[] ownPropertyNames = new string[length];
                 for (int i = 0; i < length; i++)
@@ -174,7 +58,7 @@ namespace ScriptKit
             }
         }
 
-        public JsObject this[string propertyName]
+        public JsValue this[string propertyName]
         {
             get
             {
@@ -182,7 +66,7 @@ namespace ScriptKit
                 IntPtr result = IntPtr.Zero;
                 JsErrorCode jsErrorCode= NativeMethods.JsGetProperty(this.Value, propertyId, out result);
                 JsException.ThrowIfHasError(jsErrorCode);
-                return new JsObject(result);
+                return FromIntPtr(result);
             }
             set
             {
@@ -204,7 +88,7 @@ namespace ScriptKit
             return propertyId;
         }
 
-        public JsObject this[int index]
+        public JsValue this[int index]
         {
             get
             {
@@ -243,40 +127,22 @@ namespace ScriptKit
             JsException.ThrowIfHasError(jsErrorCode);
         }
 
-        public static bool operator ==(JsObject left, JsObject right)
+        public bool InstanceOf(JsFunction jsFunction)
         {
-            if (object.ReferenceEquals(left, null) && object.ReferenceEquals(right, null))
-            {
-                return true;
-            }
-            if (object.ReferenceEquals(left, null) || object.ReferenceEquals(right, null))
-            {
-                return false;
-            }
             bool result = false;
-            JsErrorCode jsErrorCode = NativeMethods.JsEquals(left.Value, right.Value, out result);
+            JsErrorCode jsErrorCode = NativeMethods.JsInstanceOf(this.Value, jsFunction.Value, out result);
             JsException.ThrowIfHasError(jsErrorCode);
             return result;
         }
 
-        public static bool operator !=(JsObject left, JsObject right)
+        public JsValue GetOwnPropertyDescriptor(string propertyName)
         {
-            return (left == right);
+            IntPtr propertyId = GetPropertyIdFromString(propertyName);
+            IntPtr propertyDescriptor = IntPtr.Zero;
+            JsErrorCode jsErrorCode = NativeMethods.JsGetOwnPropertyDescriptor(this.Value, propertyId, out propertyDescriptor);
+            JsException.ThrowIfHasError(jsErrorCode);
+            return FromIntPtr(propertyDescriptor);
         }
-
-        public override bool Equals(object obj)
-        {
-            if (obj is JsObject)
-            {
-                bool result = false;
-                JsObject right = obj as JsObject;
-                JsErrorCode jsErrorCode = NativeMethods.JsStrictEquals(this.Value, right.Value, out result);
-                JsException.ThrowIfHasError(jsErrorCode);
-                return result;
-            }
-            return false;
-        }
-
 
     }
 }

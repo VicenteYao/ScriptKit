@@ -1,7 +1,7 @@
 ﻿using System;
 namespace ScriptKit
 {
-    public class JsBoolean:JsObject
+    public class JsBoolean:JsValue
     {
         public JsBoolean(bool value)
         {
@@ -10,7 +10,7 @@ namespace ScriptKit
             JsException.ThrowIfHasError(jsErrorCode);
         }
 
-        public JsBoolean(IntPtr value)
+        internal JsBoolean(IntPtr value)
         {
             this.Value = value;
         }
@@ -20,6 +20,7 @@ namespace ScriptKit
             bool value = false;
             JsErrorCode jsErrorCode = NativeMethods.JsBooleanToBool(this.Value, out value);
             JsException.ThrowIfHasError(jsErrorCode);
+            return value;
         }
     }
 }

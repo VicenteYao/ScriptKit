@@ -17,5 +17,7 @@
     <Compile Remove="Global.cs" />
     <Compile Remove="ValueObject.cs" />
     <Compile Remove="PropertyId.cs" />
+    <Compile Remove="JsFunctionBase.cs" />
+    <Compile Remove="JsConstructor.cs" />
   </ItemGroup>
 </Project>
