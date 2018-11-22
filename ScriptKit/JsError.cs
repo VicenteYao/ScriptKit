@@ -1,7 +1,12 @@
 ﻿using System;
 namespace ScriptKit
 {
-    public interface JsError
+    public class JsError:JsObject
     {
+        internal JsError(IntPtr value)
+        {
+            this.Value = value;
+        }
+
     }
 }

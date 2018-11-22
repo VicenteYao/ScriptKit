@@ -5,52 +5,38 @@ using System.Linq;
 
 namespace ScriptKit
 {
-    public class JsFunction:JsObject
+    public class JsFunction:JsFunctionBase
     {
         public JsFunction(Func<JsObject, ReadOnlyCollection<JsObject>, JsObject> func)
         {
             this.funcRef = func;
-            this.methodHandle = GCHandle.Alloc(func, GCHandleType.Weak);
-            JsErrorCode jsErrorCode = NativeMethods.JsCreateFunction(JsFunction.JsNativeFunction, GCHandle.ToIntPtr( this.methodHandle), out this.function);
+            IntPtr function = IntPtr.Zero;
+            this.funcGCHandle = GCHandle.Alloc(func, GCHandleType.Weak);
+            JsErrorCode jsErrorCode = NativeMethods.JsCreateFunction(JsFunction.JsNativeFunction, GCHandle.ToIntPtr(this.funcGCHandle), out function);
             JsException.ThrowIfHasError(jsErrorCode);
-            this.ValueRef = this.function;
+            this.Value = function; ;
+        }
+
+        internal JsFunction(IntPtr value)
+        {
+            this.Value = value;
         }
 
         private Delegate funcRef;
-        private IntPtr function;
-        private GCHandle methodHandle;
+        private GCHandle funcGCHandle;
 
-
-
-
-        static unsafe IntPtr JsNativeFunction(IntPtr calle, bool isConstructCall, IntPtr arguments, ushort argumentCount, IntPtr callbackState)
-        {
-            GCHandle methodGCHandle = GCHandle.FromIntPtr(callbackState);
-            if (methodGCHandle.Target is Func<JsObject, ReadOnlyCollection<JsObject>, JsObject> func)
-            {
-                JsObject objCalle = JsObject.FromIntPtr(calle);
-                Span<IntPtr> argumentSpan = new Span<IntPtr>((void*)arguments, argumentCount);
-                ReadOnlyCollection<JsObject> args =
-                 new ReadOnlyCollection<JsObject>(argumentSpan.ToArray().Select(p => JsObject.FromIntPtr(p)).ToArray());
-                JsObject result = func(objCalle, args);
-                return result.ValueRef;
-            }
-            return IntPtr.Zero;
-        }
-
-
-
-        public unsafe virtual JsObject Invoke(params JsObject[] arguments)
+        public unsafe override JsObject Invoke(params JsObject[] arguments)
         {
 
             IntPtr result = IntPtr.Zero;
-            IntPtr pArgs = Marshal.AllocHGlobal(IntPtr.Size * arguments.Length);
-            JsErrorCode jsErrorCode = NativeMethods.JsCallFunction(this.function, pArgs, (ushort)arguments.Length, out result);
-            JsException.ThrowIfHasError(jsErrorCode);
-
+            Span<IntPtr> argSpan = arguments.Select(x => x.Value).ToArray();
+            fixed(IntPtr* pArg = argSpan)
+            {
+                JsErrorCode jsErrorCode = NativeMethods.JsCallFunction(this.Value, new IntPtr(pArg), (ushort)arguments.Length, out result);
+                JsException.ThrowIfHasError(jsErrorCode);
+            }
             return JsObject.FromIntPtr(result);
         }
-
 
     }
 }

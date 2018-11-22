@@ -49,6 +49,15 @@ namespace ScriptKit
         [ThreadStatic]
         private static Dictionary<JsContext, IntPtr> contexts = new Dictionary<JsContext, IntPtr>();
 
+        internal static JsContext GetContextOfObject(JsObject jsObject)
+        {
+            IntPtr context = IntPtr.Zero;
+            JsErrorCode jsErrorCode = NativeMethods.JsGetContextOfObject(jsObject.Value, out context);
+            JsException.ThrowIfHasError(jsErrorCode);
+            JsContext jsContext = contexts.FirstOrDefault(x => x.Value == context).Key;
+            return jsContext;
+        }
+
         public JsContext CreateContext()
         {
             IntPtr ctx = IntPtr.Zero;
