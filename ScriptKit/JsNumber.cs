@@ -7,7 +7,7 @@ namespace ScriptKit
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsIntToNumber(intValue, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = value;
         }
 
@@ -15,7 +15,7 @@ namespace ScriptKit
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsDoubleToNumber(doubleValue, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = value;
         }
 
@@ -28,7 +28,7 @@ namespace ScriptKit
         {
             int value = 0;
             JsErrorCode jsErrorCode = NativeMethods.JsNumberToInt(this.Value, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return value;
         }
 
@@ -36,7 +36,7 @@ namespace ScriptKit
         {
             double value = 0;
             JsErrorCode jsErrorCode = NativeMethods.JsNumberToDouble(this.Value, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return value;
         }
 

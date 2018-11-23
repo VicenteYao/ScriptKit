@@ -19,5 +19,6 @@
     <Compile Remove="PropertyId.cs" />
     <Compile Remove="JsFunctionBase.cs" />
     <Compile Remove="JsConstructor.cs" />
+    <Compile Remove="JsDiaStepType.cs" />
   </ItemGroup>
 </Project>

@@ -453,5 +453,94 @@ namespace ScriptKit
         internal static extern JsErrorCode
             JsDiagRequestAsyncBreak(
                 IntPtr runtimeHandle);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagGetBreakpoints(
+            out IntPtr breakpoints);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagSetBreakpoint(
+      uint scriptId,
+     uint lineNumber,
+     uint columnNumber,
+            out IntPtr breakpoint);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagRemoveBreakpoint(
+     uint breakpointId);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagSetBreakOnException(
+            IntPtr runtimeHandle,
+      JsDiagBreakOnExceptionAttributes exceptionAttributes);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagGetBreakOnException(
+            IntPtr runtimeHandle,
+            out JsDiagBreakOnExceptionAttributes exceptionAttributes);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagSetStepType(
+    JsDiagStepType stepType);
+
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagGetScripts(
+            out IntPtr scriptsArray);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagGetSource(
+                uint scriptId,
+            out IntPtr source);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagGetFunctionPosition(
+                IntPtr function,
+            out IntPtr functionPosition);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagGetStackTrace(
+            out IntPtr stackTrace);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagGetStackProperties(
+                uint stackFrameIndex,
+                out IntPtr properties);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsDiagGetProperties(
+        uint objectHandle,
+            uint fromCount,
+            uint totalCount,
+    out IntPtr propertiesObject);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagGetObjectFromHandle(
+            uint objectHandle,
+            out IntPtr handleObject);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsDiagEvaluate(
+            IntPtr expression,
+            uint stackFrameIndex,
+            JsParseScriptAttributes parseAttributes,
+            bool forceSetValueProp,
+    out IntPtr evalResult);
     }
 }

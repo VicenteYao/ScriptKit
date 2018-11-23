@@ -10,10 +10,10 @@ namespace ScriptKit
             this.ErrorCode = jsErrorCode;
         }
 
-        public JsErrorCode ErrorCode { get; set; }
+        public JsErrorCode ErrorCode { get; private set; }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        internal static void ThrowIfHasError(JsErrorCode jsErrorCode)
+        internal static void VerifyErrorCode(JsErrorCode jsErrorCode)
         {
             if (jsErrorCode != JsErrorCode.JsNoError)
             {

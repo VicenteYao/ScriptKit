@@ -8,8 +8,18 @@ namespace ScriptKit
     {
         public JsPromise()
         {
-          
+            IntPtr promise = IntPtr.Zero;
+            IntPtr resolve = IntPtr.Zero;
+            IntPtr reject = IntPtr.Zero;
+            NativeMethods.JsCreatePromise(out promise, out resolve, out reject);
+            this.Resolve = new JsFunction(resolve);
+            this.Reject = new JsFunction(reject);
         }
+
+
+        public JsFunction Resolve { get; private set; }
+
+        public JsFunction Reject { get; private set; }
 
         public JsPromiseState State
         {
@@ -17,7 +27,7 @@ namespace ScriptKit
             {
                 JsPromiseState jsPromiseState = JsPromiseState.JsPromiseStateFulfilled;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetPromiseState(this.Value, out jsPromiseState);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return jsPromiseState;
             }
         }
@@ -28,7 +38,7 @@ namespace ScriptKit
             {
                 IntPtr value = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetPromiseResult(this.Value, out value);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return FromIntPtr(value);
             }
         }

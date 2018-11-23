@@ -19,7 +19,7 @@ namespace ScriptKit
             {
                 IntPtr targetValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetWeakReferenceValue(this.Value, out targetValue);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return new JsObject(targetValue);
             }
         }

@@ -11,7 +11,7 @@ namespace ScriptKit
             this.Value = value;
         }
 
-        public JsArrayBuffer(byte[] buffer)
+        public JsArrayBuffer(params byte[] buffer)
         {
             IntPtr result = IntPtr.Zero;
             uint byteLength = buffer == null ? 0 : (uint)buffer.Length;

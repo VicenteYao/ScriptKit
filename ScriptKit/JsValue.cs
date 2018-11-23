@@ -17,7 +17,7 @@ namespace ScriptKit
         {
             JsValueType jsValueType = JsValueType.JsUndefined;
             JsErrorCode jsErrorCode = NativeMethods.JsGetValueType(value, out jsValueType);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             JsValue jsValue = null;
             switch (jsValueType)
             {
@@ -37,7 +37,7 @@ namespace ScriptKit
                     jsValue = new JsError(value);
                     break;
                 case JsValueType.JsFunction:
-                    jsValue = new JsError(value);
+                    jsValue = new JsFunction(value);
                     break;
                 case JsValueType.JsNull:
                     jsValue = new JsValue(value);
@@ -75,21 +75,21 @@ namespace ScriptKit
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToNumber(this.Value, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return new JsNumber(value);
         }
         public JsBoolean ConvertToJsBoolean()
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToBoolean(this.Value, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return new JsBoolean(value);
         }
         public JsString ConvertToJsString()
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToString(this.Value, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return new JsString(value);
         }
         public JsObject ConverToJsObject()
@@ -105,7 +105,7 @@ namespace ScriptKit
             {
                 JsValueType jsValueType = JsValueType.JsUndefined;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetValueType(this.Value, out jsValueType);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return jsValueType;
             }
         }
@@ -123,7 +123,7 @@ namespace ScriptKit
             }
             bool result = false;
             JsErrorCode jsErrorCode = NativeMethods.JsEquals(left.Value, right.Value, out result);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return result;
         }
 
@@ -139,7 +139,7 @@ namespace ScriptKit
                 bool result = false;
                 JsObject right = obj as JsObject;
                 JsErrorCode jsErrorCode = NativeMethods.JsStrictEquals(this.Value, right.Value, out result);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return result;
             }
             return false;

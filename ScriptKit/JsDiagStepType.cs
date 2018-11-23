@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ScriptKit
 {
-    public enum _JsDiagStepType
+    public enum JsDiagStepType
     {
         /// <summary>
         ///     Perform a step operation to next statement.

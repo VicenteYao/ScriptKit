@@ -14,17 +14,21 @@ namespace ScriptKit
 
         protected internal IntPtr Value { get; protected set; }
 
-        private uint refCount;
-        public uint RefCount { get { return this.refCount; } }
 
-        public void AddRef()
+        public uint AddRef()
         {
-            NativeMethods.JsAddRef(this.Value, out this.refCount);
+            uint refCount = 0;
+            JsErrorCode jsErrorCode = NativeMethods.JsAddRef(this.Value, out refCount);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+            return refCount;
         }
 
-        public void Release()
+        public uint Release()
         {
-            NativeMethods.JsRelease(this.Value, out this.refCount);
+            uint refCount = 0;
+            JsErrorCode jsErrorCode = NativeMethods.JsRelease(this.Value, out refCount);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+            return refCount;
         }
 
     }

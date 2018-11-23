@@ -5,21 +5,25 @@ namespace ScriptKit
 {
     public class JsString:JsObject
     {
-        public unsafe JsString(string str) : base(IntPtr.Zero)
+        static JsString(){
+            emptyStringCharArray=new char[]{'\0'};
+        }
+        private static char[] emptyStringCharArray;
+        public unsafe JsString(string str):base(IntPtr.Zero)
         {
-            ReadOnlySpan<char> stringSpan = str.AsSpan();
-            IntPtr valueRef = IntPtr.Zero;
-            fixed (char* pString = stringSpan)
+            char[] charArray=str==string.Empty?emptyStringCharArray:str.ToCharArray();
+            IntPtr stringValue = IntPtr.Zero;
+            fixed (char* pString = charArray)
             {
-                JsErrorCode jsErrorCode = NativeMethods.JsCreateStringUtf16(new IntPtr(pString), new IntPtr(str.Length), out valueRef);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsErrorCode jsErrorCode = NativeMethods.JsCreateStringUtf16(new IntPtr(pString), new IntPtr(charArray.Length), out stringValue);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
             }
-            this.Value = valueRef;
+            this.Value = stringValue;
         }
 
-        internal JsString(IntPtr stringValue) : base(IntPtr.Zero)
+        internal JsString(IntPtr stringValue) : base(stringValue)
         {
-            this.Value = stringValue;
+
         }
 
         public int Length
@@ -38,7 +42,7 @@ namespace ScriptKit
             IntPtr pWritten = IntPtr.Zero;
             char* buffer = stackalloc char[this.Length];
             JsErrorCode jsErrorCode = NativeMethods.JsCopyStringUtf16(this.Value, 0, this.Length, new IntPtr(buffer), out pWritten);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return new string(buffer, 0, pWritten.ToInt32());
         }
 

@@ -13,7 +13,7 @@ namespace ScriptKit
             {
                 IntPtr globelValueRef = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetGlobalObject(out globelValueRef);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return new JsObject(globelValueRef);
             }
         }
@@ -24,7 +24,7 @@ namespace ScriptKit
             {
                 IntPtr nullValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetNullValue(out nullValue);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return JsValue.FromIntPtr(nullValue);
             }
         }
@@ -35,7 +35,7 @@ namespace ScriptKit
             {
                 IntPtr trueValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetTrueValue(out trueValue);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return new JsBoolean(trueValue);
             }
         }
@@ -46,7 +46,7 @@ namespace ScriptKit
             {
                 IntPtr falseValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetFalseValue(out falseValue);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return new JsBoolean(falseValue);
             }
         }
@@ -57,7 +57,7 @@ namespace ScriptKit
             {
                 IntPtr undefinedValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetUndefinedValue(out undefinedValue);
-                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 return JsValue.FromIntPtr (undefinedValue);
             }
         }
@@ -71,7 +71,12 @@ namespace ScriptKit
             JsString sourceUrl = new JsString("");
             IntPtr result = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsRun(scriptString.Value, new IntPtr(sourceContext), sourceUrl.Value, JsParseScriptAttributes.JsParseScriptAttributeNone, out result);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+        }
+
+
+        public void Run(){
+
         }
 
         public void Run(JsExternalArrayBuffer jsExternalArrayBuffer)
@@ -80,7 +85,7 @@ namespace ScriptKit
             IntPtr result = IntPtr.Zero;
             JsString sourceUrl = new JsString("");
             JsErrorCode jsErrorCode = NativeMethods.JsRun(jsExternalArrayBuffer.Value, new IntPtr(sourceContext), sourceUrl.Value, JsParseScriptAttributes.JsParseScriptAttributeArrayBufferIsUtf16Encoded, out result);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
         }
     }
 }

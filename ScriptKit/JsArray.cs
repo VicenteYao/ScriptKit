@@ -5,23 +5,32 @@ namespace ScriptKit
 {
     public class JsArray : JsObject
     {
-        public JsArray(params JsObject[] initValues):base(IntPtr.Zero)
+        public JsArray(params JsValue[] initValues):base(IntPtr.Zero)
         {
             IntPtr array = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsCreateArray((uint)initValues.Length, out array);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
-            if (initValues != null)
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+            this.Value = array;
+            for (int i = 0; i < initValues.Length; i++)
             {
-                for (int i = 0; i < initValues.Length; i++)
-                {
-                    this[i] = initValues[i];
-                }
+                this[i] = initValues[i];
             }
+
         }
 
-        internal JsArray(IntPtr value) : base(IntPtr.Zero)
+        internal JsArray(IntPtr value) : base(value)
         {
 
+        }
+
+
+        public int Length
+        {
+
+            get
+            {
+                return (this["length"] as JsNumber).ToInt32();
+            }
         }
 
 

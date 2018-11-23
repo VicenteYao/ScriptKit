@@ -12,14 +12,14 @@ namespace ScriptKit
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsCreateTypedArray(jsTypedArrayType, IntPtr.Zero, 0, elementLength, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = value;
         }
 
         public JsTypedArray(JsTypedArrayType jsTypedArrayType,JsArray baseArray){
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode= NativeMethods.JsCreateTypedArray(jsTypedArrayType, baseArray.Value, 0, 0,out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = value;
         }
 
@@ -27,7 +27,7 @@ namespace ScriptKit
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsCreateTypedArray(jsTypedArrayType, baseArray.Value, byteOffset, elementLength, out value);
-            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = value;
         }
     }

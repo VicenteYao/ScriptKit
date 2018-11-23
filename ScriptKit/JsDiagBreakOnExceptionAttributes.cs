@@ -4,7 +4,7 @@ using System.Text;
 
 namespace ScriptKit
 {
-    public enum _JsDiagBreakOnExceptionAttributes
+    public enum JsDiagBreakOnExceptionAttributes
     {
         /// <summary>
         ///     Don't break on any exception.
