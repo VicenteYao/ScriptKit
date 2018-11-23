@@ -1,10 +1,11 @@
 ﻿using System;
 namespace ScriptKit
 {
-    public  class JsValue
+    public  class JsValue:JsRuntimeObject
     {
-        protected JsValue()
+        protected  JsValue()
         {
+
         }
 
         private JsValue(IntPtr value)
@@ -16,7 +17,7 @@ namespace ScriptKit
         {
             JsValueType jsValueType = JsValueType.JsUndefined;
             JsErrorCode jsErrorCode = NativeMethods.JsGetValueType(value, out jsValueType);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             JsValue jsValue = null;
             switch (jsValueType)
             {
@@ -65,7 +66,6 @@ namespace ScriptKit
             return jsValue;
         }
 
-        protected internal IntPtr Value { get; protected set; }
 
         public string ConverToString()
         {
@@ -75,21 +75,21 @@ namespace ScriptKit
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToNumber(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return new JsNumber(value);
         }
         public JsBoolean ConvertToJsBoolean()
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToBoolean(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return new JsBoolean(value);
         }
         public JsString ConvertToJsString()
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsConvertValueToString(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return new JsString(value);
         }
         public JsObject ConverToJsObject()
@@ -99,22 +99,13 @@ namespace ScriptKit
             return new JsObject(value);
         }
 
-
-        public JsContext Context
-        {
-            get
-            {
-                return JsRuntime.GetContextOfObject(this);
-            }
-        }
-
         public JsValueType ValueType
         {
             get
             {
                 JsValueType jsValueType = JsValueType.JsUndefined;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetValueType(this.Value, out jsValueType);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return jsValueType;
             }
         }
@@ -132,7 +123,7 @@ namespace ScriptKit
             }
             bool result = false;
             JsErrorCode jsErrorCode = NativeMethods.JsEquals(left.Value, right.Value, out result);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return result;
         }
 
@@ -148,12 +139,11 @@ namespace ScriptKit
                 bool result = false;
                 JsObject right = obj as JsObject;
                 JsErrorCode jsErrorCode = NativeMethods.JsStrictEquals(this.Value, right.Value, out result);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return result;
             }
             return false;
         }
-
 
         public override string ToString()
         {

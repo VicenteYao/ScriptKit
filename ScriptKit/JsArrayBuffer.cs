@@ -11,5 +11,12 @@ namespace ScriptKit
             this.Value = value;
         }
 
+        public JsArrayBuffer(byte[] buffer)
+        {
+            IntPtr result = IntPtr.Zero;
+            uint byteLength = buffer == null ? 0 : (uint)buffer.Length;
+            NativeMethods.JsCreateArrayBuffer(byteLength, out result);
+        }
+
     }
 }

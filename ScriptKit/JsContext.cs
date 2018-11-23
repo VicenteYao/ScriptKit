@@ -1,23 +1,19 @@
 ﻿using System;
 namespace ScriptKit
 {
-    public class JsContext
+    public class JsContext:JsRuntimeObject
     {
-        private IntPtr ctx;
-
         internal JsContext(IntPtr ctx)
         {
             this.Value = ctx;
         }
-
-        internal IntPtr Value { get; private set; }
 
         public JsObject Global {
             get
             {
                 IntPtr globelValueRef = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetGlobalObject(out globelValueRef);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return new JsObject(globelValueRef);
             }
         }
@@ -28,7 +24,7 @@ namespace ScriptKit
             {
                 IntPtr nullValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetNullValue(out nullValue);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return JsValue.FromIntPtr(nullValue);
             }
         }
@@ -39,7 +35,7 @@ namespace ScriptKit
             {
                 IntPtr trueValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetTrueValue(out trueValue);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return new JsBoolean(trueValue);
             }
         }
@@ -50,7 +46,7 @@ namespace ScriptKit
             {
                 IntPtr falseValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetFalseValue(out falseValue);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return new JsBoolean(falseValue);
             }
         }
@@ -61,17 +57,30 @@ namespace ScriptKit
             {
                 IntPtr undefinedValue = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetUndefinedValue(out undefinedValue);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return JsValue.FromIntPtr (undefinedValue);
             }
         }
 
+        private static uint sourceContext;
+
         public void Run(string script)
         {
+            sourceContext++;
             JsString scriptString = new JsString(script);
+            JsString sourceUrl = new JsString("");
             IntPtr result = IntPtr.Zero;
-            JsErrorCode jsErrorCode = NativeMethods.JsRun(scriptString.Value, IntPtr.Zero, scriptString.Value, JsParseScriptAttributes.JsParseScriptAttributeNone, out result);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsErrorCode jsErrorCode = NativeMethods.JsRun(scriptString.Value, new IntPtr(sourceContext), sourceUrl.Value, JsParseScriptAttributes.JsParseScriptAttributeNone, out result);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+        }
+
+        public void Run(JsExternalArrayBuffer jsExternalArrayBuffer)
+        {
+            sourceContext++;
+            IntPtr result = IntPtr.Zero;
+            JsString sourceUrl = new JsString("");
+            JsErrorCode jsErrorCode = NativeMethods.JsRun(jsExternalArrayBuffer.Value, new IntPtr(sourceContext), sourceUrl.Value, JsParseScriptAttributes.JsParseScriptAttributeArrayBufferIsUtf16Encoded, out result);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
         }
     }
 }

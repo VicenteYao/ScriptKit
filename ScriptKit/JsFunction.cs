@@ -7,17 +7,17 @@ namespace ScriptKit
 {
     public class JsFunction:JsObject
     {
-        public JsFunction(Func<JsFunction, ReadOnlyCollection<JsValue>, JsValue> func)
+        public JsFunction(JsFunctionCallback functionCallback) : base(IntPtr.Zero)
         {
-            this.funcRef = func;
+            this.funcRef = functionCallback;
             IntPtr function = IntPtr.Zero;
-            this.funcGCHandle = GCHandle.Alloc(func, GCHandleType.Weak);
+            this.funcGCHandle = GCHandle.Alloc(functionCallback, GCHandleType.Weak);
             JsErrorCode jsErrorCode = NativeMethods.JsCreateFunction(JsNativeFunction, GCHandle.ToIntPtr(this.funcGCHandle), out function);
-            JsException.ThrowIfHasError(jsErrorCode);
-            this.Value = function; ;
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            this.Value = function;
         }
 
-        internal JsFunction(IntPtr value)
+        internal JsFunction(IntPtr value) : base(IntPtr.Zero)
         {
             this.Value = value;
         }
@@ -29,14 +29,15 @@ namespace ScriptKit
         private static unsafe IntPtr JsNativeFunction(IntPtr calle, bool isConstructCall, IntPtr arguments, ushort argumentCount, IntPtr callbackState)
         {
             GCHandle funcGCHandle = GCHandle.FromIntPtr(callbackState);
-            if (funcGCHandle.Target is Func<JsFunction, ReadOnlyCollection<JsValue>, JsValue> func)
+            if (funcGCHandle.Target is JsFunctionCallback functionCallback)
             {
                 JsFunction objCalle = new JsFunction(calle);
                 Span<IntPtr> argumentSpan = new Span<IntPtr>(arguments.ToPointer(), argumentCount);
                 IntPtr[] values = argumentSpan.ToArray();
                 ReadOnlyCollection<JsValue> args =
-                    new ReadOnlyCollection<JsValue>(argumentSpan.ToArray().Select(p => JsValue.FromIntPtr(p)).ToArray());
-                JsValue result = func(objCalle, args);
+                    new ReadOnlyCollection<JsValue>(argumentSpan.ToArray().Skip(1).Select(p => JsValue.FromIntPtr(p)).ToArray());
+                JsValue self =FromIntPtr(values[0]);
+                JsValue result = functionCallback(objCalle, self, args);
                 if (result == null)
                 {
                     return objCalle.Context.Null.Value;
@@ -55,7 +56,7 @@ namespace ScriptKit
             fixed(IntPtr* pArg = argSpan)
             {
                 JsErrorCode jsErrorCode = NativeMethods.JsCallFunction(this.Value, new IntPtr(pArg), (ushort)arguments.Length, out result);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
             return FromIntPtr(result);
         }
@@ -68,7 +69,7 @@ namespace ScriptKit
             fixed (IntPtr* pArg = argSpan)
             {
                 JsErrorCode jsErrorCode = NativeMethods.JsConstructObject(this.Value, new IntPtr(pArg), (ushort)arguments.Length, out result);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
             return FromIntPtr(result);
         }

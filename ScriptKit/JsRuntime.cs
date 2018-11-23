@@ -4,15 +4,47 @@ using System.Linq;
 
 namespace ScriptKit
 {
-    public class JsRuntime
+    public class JsRuntime : IDisposable
     {
-        private JsRuntime(IntPtr runtime)
+        private JsRuntime(IntPtr runtimeHandle)
         {
-            this.runtime = runtime;
+            this.runtimeHandle = runtimeHandle;
         }
 
-        private IntPtr runtime;
+        private IntPtr runtimeHandle;
 
+        internal IntPtr RuntimeHandle { get { return this.runtimeHandle; } }
+
+
+
+        public bool IsEnabled
+        {
+            get
+            {
+                bool isDisabled = false;
+                JsErrorCode jsErrorCode = NativeMethods.JsIsRuntimeExecutionDisabled(this.runtimeHandle, out isDisabled);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+                return !isDisabled;
+            }
+            set
+            {
+                JsErrorCode jsErrorCode = value ? NativeMethods.JsEnableRuntimeExecution(this.runtimeHandle) : NativeMethods.JsDisableRuntimeExecution(this.runtimeHandle);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            }
+        }
+
+        private JsDebugger jsDebugger;
+        public JsDebugger Debugger
+        {
+            get
+            {
+                if (this.jsDebugger == null)
+                {
+                    this.jsDebugger = JsDebugger.CreateDebugger(this);
+                }
+                return this.jsDebugger;
+            }
+        }
 
 
         public JsContext CurrentContext
@@ -21,25 +53,26 @@ namespace ScriptKit
             {
                 IntPtr currentContext = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetCurrentContext(out currentContext);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return contexts[currentContext];
             }
             set
             {
-                NativeMethods.JsSetCurrentContext(value.Value);
+                JsErrorCode jsErrorCode = NativeMethods.JsSetCurrentContext(value.Value);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
 
         }
 
         public static JsRuntime CreateRuntime()
         {
-            IntPtr runtime = IntPtr.Zero;
+            IntPtr runtimeHandle = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsCreateRuntime(
             JsRuntimeAttributes.JsRuntimeAttributeEnableExperimentalFeatures |
                 JsRuntimeAttributes.JsRuntimeAttributeEnableIdleProcessing |
-             JsRuntimeAttributes.JsRuntimeAttributeDispatchSetExceptionsToDebugger, null, out runtime);
-            JsException.ThrowIfHasError(jsErrorCode);
-            return new JsRuntime(runtime);
+             JsRuntimeAttributes.JsRuntimeAttributeDispatchSetExceptionsToDebugger, null, out runtimeHandle);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            return new JsRuntime(runtimeHandle);
         }
 
         [ThreadStatic]
@@ -49,7 +82,7 @@ namespace ScriptKit
         {
             IntPtr context = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsGetContextOfObject(jsValue.Value, out context);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             JsContext jsContext = null;
             if (contexts.TryGetValue(context, out jsContext))
             {
@@ -61,17 +94,23 @@ namespace ScriptKit
         public JsContext CreateContext()
         {
             IntPtr ctx = IntPtr.Zero;
-            JsErrorCode jsErrorCode = NativeMethods.JsCreateContext(this.runtime, out ctx);
-            JsException.ThrowIfHasError(jsErrorCode);
-            JsContext jsContext= new JsContext(ctx);
+            JsErrorCode jsErrorCode = NativeMethods.JsCreateContext(this.runtimeHandle, out ctx);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            JsContext jsContext = new JsContext(ctx);
             contexts.Add(ctx, jsContext);
             return jsContext;
         }
 
         public void GarbageCollect()
         {
-            JsErrorCode jsErrorCode = NativeMethods.JsCollectGarbage(this.runtime);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsErrorCode jsErrorCode = NativeMethods.JsCollectGarbage(this.runtimeHandle);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+        }
+
+        public void Dispose()
+        {
+            JsErrorCode jsErrorCode = NativeMethods.JsDisposeRuntime(this.runtimeHandle);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
         }
     }
 }

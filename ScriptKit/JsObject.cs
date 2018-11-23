@@ -9,18 +9,22 @@ namespace ScriptKit
         {
             IntPtr obj = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsCreateObject(out obj);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             this.Value = obj;
         }
-
 
         internal JsObject(IntPtr value)
         {
             this.Value = value;
         }
 
-
-    
+        public JsContext Context
+        {
+            get
+            {
+                return JsRuntime.GetContextOfObject(this);
+            }
+        }
 
         public JsObject Prototype
         {
@@ -28,17 +32,15 @@ namespace ScriptKit
             {
                 IntPtr prototypeObject;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetPrototype(this.Value, out prototypeObject);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return new JsObject(prototypeObject);
             }
             set
             {
                 JsErrorCode jsErrorCode = NativeMethods.JsSetPrototype(this.Value, value.Value);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
         }
-
-
 
         public string[] OwnPropertyNames
         {
@@ -46,7 +48,7 @@ namespace ScriptKit
             {
                 IntPtr propertyNames = IntPtr.Zero;
                 JsErrorCode jsErrorCode = NativeMethods.JsGetOwnPropertyNames(this.Value, out propertyNames);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 JsArray jsArray = FromIntPtr(propertyNames) as JsArray;
                 int length = jsArray["length"].ConvertToJsNumber().ToInt32();
                 string[] ownPropertyNames = new string[length];
@@ -65,14 +67,14 @@ namespace ScriptKit
                 IntPtr propertyId= GetPropertyIdFromString(propertyName);
                 IntPtr result = IntPtr.Zero;
                 JsErrorCode jsErrorCode= NativeMethods.JsGetProperty(this.Value, propertyId, out result);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return FromIntPtr(result);
             }
             set
             {
                 IntPtr propertyId = GetPropertyIdFromString(propertyName);
                 JsErrorCode jsErrorCode = NativeMethods.JsSetProperty(this.Value, propertyId, value.Value, false);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
         }
 
@@ -83,7 +85,7 @@ namespace ScriptKit
             fixed (byte* pBytes = bytes)
             {
                 JsErrorCode jsErrorCode = NativeMethods.JsCreatePropertyId(new IntPtr(pBytes), new IntPtr(bytes.Length), out propertyId);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
             return propertyId;
         }
@@ -95,14 +97,14 @@ namespace ScriptKit
                 IntPtr result;
                 JsNumber indexNumber = new JsNumber(index);
                 JsErrorCode jsErrorCode = NativeMethods.JsGetIndexedProperty(this.Value, indexNumber.Value, out result);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
                 return FromIntPtr(result);
             }
             set
             {
                 JsNumber indexNumber = new JsNumber(index);
                 JsErrorCode jsErrorCode = NativeMethods.JsSetIndexedProperty(this.Value, indexNumber.Value, value.Value);
-                JsException.ThrowIfHasError(jsErrorCode);
+                JsRuntimeException.ThrowIfHasError(jsErrorCode);
             }
         }
 
@@ -117,21 +119,21 @@ namespace ScriptKit
             IntPtr propertyId = GetPropertyIdFromString(propertyName);
             bool result = false;
             JsErrorCode jsErrorCode = NativeMethods.JsDeleteProperty(this.Value, propertyId, false, out result);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
         }
 
         public void DeleteIndexedProperty(int index)
         {
             JsNumber indexNumber = new JsNumber(index);
             JsErrorCode jsErrorCode = NativeMethods.JsDeleteIndexedProperty(this.Value, indexNumber.Value);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
         }
 
         public bool InstanceOf(JsFunction jsFunction)
         {
             bool result = false;
             JsErrorCode jsErrorCode = NativeMethods.JsInstanceOf(this.Value, jsFunction.Value, out result);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return result;
         }
 
@@ -140,8 +142,16 @@ namespace ScriptKit
             IntPtr propertyId = GetPropertyIdFromString(propertyName);
             IntPtr propertyDescriptor = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsGetOwnPropertyDescriptor(this.Value, propertyId, out propertyDescriptor);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return FromIntPtr(propertyDescriptor);
+        }
+
+        public JsWeakReference CreateWeakReference()
+        {
+            IntPtr weakRef = IntPtr.Zero;
+            JsErrorCode jsErrorCode = NativeMethods.JsCreateWeakReference(this.Value, out weakRef);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
+            return new JsWeakReference(weakRef);
         }
 
     }

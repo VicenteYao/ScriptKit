@@ -7,7 +7,7 @@ namespace ScriptKit
         {
             IntPtr booleanValue = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsBoolToBoolean(value, out booleanValue);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
         }
 
         internal JsBoolean(IntPtr value)
@@ -19,7 +19,7 @@ namespace ScriptKit
         {
             bool value = false;
             JsErrorCode jsErrorCode = NativeMethods.JsBooleanToBool(this.Value, out value);
-            JsException.ThrowIfHasError(jsErrorCode);
+            JsRuntimeException.ThrowIfHasError(jsErrorCode);
             return value;
         }
     }

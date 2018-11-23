@@ -339,5 +339,119 @@ namespace ScriptKit
             IntPtr propertyId,
             out IntPtr propertyDescriptor);
 
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsAddRef(
+            IntPtr obj,
+            out uint count);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsRelease(
+        IntPtr obj,
+        out uint count);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateWeakReference(
+        IntPtr value,
+        out IntPtr weakRef);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetWeakReferenceValue(
+        IntPtr weakRef,
+        out IntPtr value);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateExternalArrayBuffer(
+        IntPtr data,
+        uint byteLength,
+        JsFinalizeCallback finalizeCallback,
+        IntPtr callbackState,
+        out IntPtr result);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateArrayBuffer(
+        uint byteLength,
+        out IntPtr result);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsHasException(
+                out bool hasException);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsGetAndClearException(
+                out IntPtr exception);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsSetException(
+                IntPtr exception);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDisableRuntimeExecution(
+                IntPtr runtime);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsEnableRuntimeExecution(
+                IntPtr runtime);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsIsRuntimeExecutionDisabled(
+        IntPtr runtime,
+        out bool isDisabled);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsGetPromiseState(
+                 IntPtr promise,
+                out JsPromiseState state);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsGetPromiseResult(
+                IntPtr promise,
+                out IntPtr result);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsCreatePromise(
+                out IntPtr promise,
+                    out IntPtr PtrresolveFunction,
+                   out IntPtr PtrrejectFunction);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsDiagStartDebugging(
+        IntPtr runtimeHandle,
+         JsDiagDebugEventCallback debugEventCallback,
+        IntPtr callbackState);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagStopDebugging(
+                IntPtr runtimeHandle,
+                IntPtr callbackState);
+
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsDiagRequestAsyncBreak(
+                IntPtr runtimeHandle);
     }
 }
