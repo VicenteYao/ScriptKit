@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Runtime.InteropServices;
 using System.Text;
 
 namespace ScriptKit
@@ -12,6 +13,37 @@ namespace ScriptKit
             JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = obj;
         }
+
+        public JsObject(object externalData)
+        {
+            IntPtr obj = IntPtr.Zero;
+            GCHandle externalDataGCHandle = GCHandle.Alloc(externalData, GCHandleType.Weak);
+            JsErrorCode jsErrorCode = NativeMethods.JsCreateExternalObject(GCHandle.ToIntPtr(externalDataGCHandle),
+                                                                           HandleJsFinalizeCallback,
+                                                                           out obj);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+            this.Value = obj;
+        }
+
+        private static void HandleJsFinalizeCallback(IntPtr data)
+        {
+            GCHandle gcHandle = GCHandle.FromIntPtr(data);
+            gcHandle.Free();
+        }
+
+
+        public object ExternalData
+        {
+            get
+            {
+                IntPtr externalData = IntPtr.Zero;
+                JsErrorCode jsErrorCode = NativeMethods.JsGetExternalData(this.Value, out externalData);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
+                GCHandle handle = GCHandle.FromIntPtr(externalData);
+                return handle.Target;
+            }
+        }
+
 
         internal JsObject(IntPtr value)
         {
@@ -50,7 +82,7 @@ namespace ScriptKit
                 JsErrorCode jsErrorCode = NativeMethods.JsGetOwnPropertyNames(this.Value, out propertyNames);
                 JsRuntimeException.VerifyErrorCode(jsErrorCode);
                 JsArray jsArray = FromIntPtr(propertyNames) as JsArray;
-                int length = jsArray["length"].ConvertToJsNumber().ToInt32();
+                int length = jsArray.Length;
                 string[] ownPropertyNames = new string[length];
                 for (int i = 0; i < length; i++)
                 {
@@ -59,6 +91,45 @@ namespace ScriptKit
                 return ownPropertyNames;
             }
         }
+
+        public JsSymbol[] OwnPropertySymbols
+        {
+
+            get
+            {
+                IntPtr propertySymbols = IntPtr.Zero;
+                JsErrorCode jsErrorCode = NativeMethods.JsGetOwnPropertySymbols(this.Value, out propertySymbols);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
+                JsArray jsArray = FromIntPtr(propertySymbols) as JsArray;
+                int length = jsArray.Length;
+                JsSymbol[] ownPropertySymbols = new JsSymbol[length];
+                for (int i = 0; i < length; i++)
+                {
+                    ownPropertySymbols[i] = jsArray[i] as JsSymbol;
+                }
+                return ownPropertySymbols;
+            }
+        }
+
+        public bool IsExtensible
+        {
+            get
+            {
+                bool isExtensible = false;
+                JsErrorCode jsErrorCode = NativeMethods.JsGetExtensionAllowed(this.Value, out isExtensible);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
+                return isExtensible;
+            }
+        }
+
+        public void PreventExtension()
+        {
+            JsErrorCode jsErrorCode = NativeMethods.JsPreventExtension(this.Value);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+        }
+
+
+
 
         public JsValue this[string propertyName]
         {
@@ -78,6 +149,24 @@ namespace ScriptKit
             }
         }
 
+        public JsValue this[JsSymbol symbol]
+        {
+            get
+            {
+                IntPtr propertyId = GetPropertyIdFromSymbol(symbol);
+                IntPtr result = IntPtr.Zero;
+                JsErrorCode jsErrorCode = NativeMethods.JsGetProperty(this.Value, propertyId, out result);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
+                return FromIntPtr(result);
+            }
+            set
+            {
+                IntPtr propertyId = GetPropertyIdFromSymbol(symbol);
+                JsErrorCode jsErrorCode = NativeMethods.JsSetProperty(this.Value, propertyId, value.Value, false);
+                JsRuntimeException.VerifyErrorCode(jsErrorCode);
+            }
+        }
+
         private unsafe static IntPtr GetPropertyIdFromString(string propertyName)
         {
             Span<byte> bytes = Encoding.UTF8.GetBytes(propertyName);
@@ -88,6 +177,13 @@ namespace ScriptKit
                 JsRuntimeException.VerifyErrorCode(jsErrorCode);
             }
             return propertyId;
+        }
+
+        private static IntPtr GetPropertyIdFromSymbol(JsSymbol symbol){
+            IntPtr propertyIdRef = IntPtr.Zero;
+            JsErrorCode jsErrorCode = NativeMethods.JsGetPropertyIdFromSymbol(symbol.Value, out propertyIdRef);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+            return propertyIdRef;
         }
 
         public JsValue this[int index]
@@ -153,6 +249,8 @@ namespace ScriptKit
             JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return new JsWeakReference(weakRef);
         }
+
+        public  ProxyProperties{
 
     }
 }

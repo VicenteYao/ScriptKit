@@ -3,13 +3,13 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 namespace ScriptKit
 {
-    public class JsString:JsObject
+    public class JsString:JsValue
     {
         static JsString(){
             emptyStringCharArray=new char[]{'\0'};
         }
         private static char[] emptyStringCharArray;
-        public unsafe JsString(string str):base(IntPtr.Zero)
+        public unsafe JsString(string str)
         {
             char[] charArray=str==string.Empty?emptyStringCharArray:str.ToCharArray();
             IntPtr stringValue = IntPtr.Zero;
@@ -21,9 +21,9 @@ namespace ScriptKit
             this.Value = stringValue;
         }
 
-        internal JsString(IntPtr stringValue) : base(stringValue)
+        internal JsString(IntPtr stringValue)
         {
-
+            this.Value = stringValue;
         }
 
         public int Length

@@ -3,7 +3,7 @@ namespace ScriptKit
 {
     public class JsNumber:JsValue
     {
-        internal JsNumber(int intValue)
+        public JsNumber(int intValue)
         {
             IntPtr value = IntPtr.Zero;
             JsErrorCode jsErrorCode = NativeMethods.JsIntToNumber(intValue, out value);

@@ -51,7 +51,8 @@ namespace ScriptKit
 
         public void Stop()
         {
-            NativeMethods.JsDiagStopDebugging(this.jsRuntime.RuntimeHandle, IntPtr.Zero);
+            JsErrorCode jsErrorCode = NativeMethods.JsDiagStopDebugging(this.jsRuntime.RuntimeHandle, IntPtr.Zero);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
         }
 
 
@@ -99,13 +100,13 @@ namespace ScriptKit
         }
 
 
-        public JsScript[] Scripts { get; private set; }
+        public Script[] Scripts { get; private set; }
 
 
 
 
 
-        public JsDiagBreakOnExceptionAttributes BreakOnExceptionAttribute
+        public JsDiagBreakOnExceptionAttributes BreakOnExceptionAttributes
         {
             get
             {

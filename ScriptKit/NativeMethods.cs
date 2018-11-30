@@ -542,5 +542,130 @@ namespace ScriptKit
             JsParseScriptAttributes parseAttributes,
             bool forceSetValueProp,
     out IntPtr evalResult);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsSetObjectBeforeCollectCallback(
+            IntPtr obj,
+            IntPtr callbackState,
+    JsObjectBeforeCollectCallback objectBeforeCollectCallback);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsIdle(out uint nextIdleTick);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetArrayBufferStorage(
+            IntPtr arrayBuffer,
+            out IntPtr buffer,
+            out uint bufferLength);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetTypedArrayStorage(
+            IntPtr typedArray,
+            out IntPtr buffer,
+            out uint bufferLength,
+            out JsTypedArrayType arrayType,
+            out int elementSize);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateExternalObject(
+            IntPtr data,
+    JsFinalizeCallback finalizeCallback,
+            out IntPtr obj);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsGetExternalData(
+            IntPtr obj,
+            out IntPtr externalData);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsGetExtensionAllowed(
+        IntPtr obj,
+            out bool value);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsPreventExtension(IntPtr obj);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateSymbol(
+            IntPtr description,
+            out IntPtr result);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+JsGetOwnPropertySymbols(
+  IntPtr obj,
+            out IntPtr propertySymbols);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetSymbolFromPropertyId(
+            IntPtr propertyId,
+            out IntPtr symbol);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsGetPropertyIdType(
+            IntPtr propertyId,
+            out JsPropertyIdType propertyIdType);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+            JsGetPropertyIdFromSymbol(
+            IntPtr symbol,
+            out IntPtr propertyId);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsCreateDataView(
+            IntPtr arrayBuffer,
+    uint byteOffset,
+     uint byteLength,
+            out IntPtr result);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetTypedArrayInfo(
+            IntPtr typedArray,
+            out JsTypedArrayType arrayType,
+            out IntPtr arrayBuffer,
+            out uint byteOffset,
+            out uint byteLength);
+
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsGetDataViewStorage(
+            IntPtr dataView,
+            out IntPtr buffer,
+            out uint bufferLength);
+
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+    JsSetPromiseContinuationCallback(
+        JsPromiseContinuationCallback promiseContinuationCallback,
+            IntPtr callbackState);
+
+        [DllImport(lib)]
+        internal static extern JsErrorCode
+        JsParse(
+            IntPtr script,
+            IntPtr sourceContext,
+            IntPtr sourceUrl,
+    JsParseScriptAttributes parseAttributes,
+            out IntPtr result);
     }
 }

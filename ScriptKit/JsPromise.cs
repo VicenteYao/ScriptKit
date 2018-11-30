@@ -6,6 +6,7 @@ namespace ScriptKit
 {
     public class JsPromise:JsObject
     {
+
         public JsPromise()
         {
             IntPtr promise = IntPtr.Zero;
@@ -14,8 +15,8 @@ namespace ScriptKit
             NativeMethods.JsCreatePromise(out promise, out resolve, out reject);
             this.Resolve = new JsFunction(resolve);
             this.Reject = new JsFunction(reject);
+      
         }
-
 
         public JsFunction Resolve { get; private set; }
 
@@ -42,6 +43,7 @@ namespace ScriptKit
                 return FromIntPtr(value);
             }
         }
+
 
     }
 }

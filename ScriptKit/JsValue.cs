@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+
 namespace ScriptKit
 {
     public  class JsValue:JsRuntimeObject
@@ -13,7 +15,8 @@ namespace ScriptKit
             this.Value = value;
         }
 
-        public static JsValue FromIntPtr(IntPtr value)
+
+        internal static JsValue FromIntPtr(IntPtr value)
         {
             JsValueType jsValueType = JsValueType.JsUndefined;
             JsErrorCode jsErrorCode = NativeMethods.JsGetValueType(value, out jsValueType);

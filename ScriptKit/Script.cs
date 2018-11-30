@@ -1,9 +1,9 @@
 ﻿using System;
 namespace ScriptKit
 {
-    public class JsScript
+    public class Script
     {
-        public JsScript()
+        public Script()
         {
         }
 

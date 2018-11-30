@@ -15,7 +15,12 @@ namespace ScriptKit
 
         internal IntPtr RuntimeHandle { get { return this.runtimeHandle; } }
 
-
+        public void Idle()
+        {
+            uint nextIdleTick = 0;
+            JsErrorCode jsErrorCode = NativeMethods.JsIdle(out nextIdleTick);
+            JsRuntimeException.VerifyErrorCode(jsErrorCode);
+        }
 
         public bool IsEnabled
         {
@@ -72,10 +77,14 @@ namespace ScriptKit
             JsErrorCode jsErrorCode = NativeMethods.JsCreateRuntime(
             JsRuntimeAttributes.JsRuntimeAttributeEnableExperimentalFeatures |
                 JsRuntimeAttributes.JsRuntimeAttributeEnableIdleProcessing |
-             JsRuntimeAttributes.JsRuntimeAttributeDispatchSetExceptionsToDebugger, null, out runtimeHandle);
+                JsRuntimeAttributes.JsRuntimeAttributeDispatchSetExceptionsToDebugger | 
+                JsRuntimeAttributes.JsRuntimeAttributeAllowScriptInterrupt,null, out runtimeHandle);
             JsRuntimeException.VerifyErrorCode(jsErrorCode);
             return new JsRuntime(runtimeHandle);
         }
+
+
+
 
         [ThreadStatic]
         private static Dictionary<IntPtr, JsContext> contexts = new Dictionary<IntPtr, JsContext>();

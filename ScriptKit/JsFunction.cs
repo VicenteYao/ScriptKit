@@ -1,40 +1,53 @@
 ﻿using System;
 using System.Collections.ObjectModel;
 using System.Runtime.InteropServices;
-using System.Linq;
 
 namespace ScriptKit
 {
     public class JsFunction:JsObject
     {
+        private readonly IntPtr callbackState;
+
         public JsFunction(JsFunctionCallback functionCallback) : base(IntPtr.Zero)
         {
-            this.functionCallback = functionCallback;
             IntPtr function = IntPtr.Zero;
-            this.functionCallbackGCHandle = GCHandle.Alloc(functionCallback, GCHandleType.Weak);
-            JsErrorCode jsErrorCode = NativeMethods.JsCreateFunction(JsNativeFunction, GCHandle.ToIntPtr(this.functionCallbackGCHandle), out function);
+            this.callbackState = GCHandle.ToIntPtr(GCHandle.Alloc(functionCallback, GCHandleType.Weak));
+            JsErrorCode jsErrorCode = NativeMethods.JsCreateFunction(jsNativeFunction, this.callbackState, out function);
             JsRuntimeException.VerifyErrorCode(jsErrorCode);
             this.Value = function;
+            NativeMethods.JsSetObjectBeforeCollectCallback(function, this.callbackState, jsObjectBeforeCollectCallback);
         }
+
+
+        private static JsNativeFunction jsNativeFunction = new JsNativeFunction(NativeFunction);
+        private static JsObjectBeforeCollectCallback jsObjectBeforeCollectCallback = new JsObjectBeforeCollectCallback(HandleJsObjectBeforeCollectCallback);
+
+        private static void HandleJsObjectBeforeCollectCallback(IntPtr obj, IntPtr callbackState)
+        {
+            GCHandle gcHandle = GCHandle.FromIntPtr(callbackState);
+            gcHandle.Free();
+        }
+
 
         internal JsFunction(IntPtr value) : base(value)
         {
 
         }
 
-        private Delegate functionCallback;
-        private GCHandle functionCallbackGCHandle;
-
-
-        private static unsafe IntPtr JsNativeFunction(IntPtr calle, bool isConstructCall, IntPtr arguments, ushort argumentCount, IntPtr callbackState)
+        private static  unsafe IntPtr NativeFunction(IntPtr calle, bool isConstructCall, IntPtr arguments, ushort argumentCount, IntPtr callbackState)
         {
             GCHandle funcGCHandle = GCHandle.FromIntPtr(callbackState);
             JsFunction objCalle = new JsFunction(calle);
             Span<IntPtr> argumentSpan = new Span<IntPtr>(arguments.ToPointer(), argumentCount);
             IntPtr[] values = argumentSpan.ToArray();
-            ReadOnlyCollection<JsValue> args =
-                new ReadOnlyCollection<JsValue>(values.Skip(1).Select(p => JsValue.FromIntPtr(p)).ToArray());
+            JsValue[] jsValues = new JsValue[argumentCount-1];
+            for (int i = 1; i < argumentCount; i++)
+            {
+                jsValues[i-1] = JsValue.FromIntPtr(values[i]);
+            }
             JsValue self = FromIntPtr(values[0]);
+            ReadOnlyCollection<JsValue> args = new ReadOnlyCollection<JsValue>(jsValues);
+
             JsFunctionCallback functionCallback = funcGCHandle.Target as JsFunctionCallback;
             JsValue result = functionCallback(objCalle, self, args);
             if (result == null)
@@ -67,10 +80,14 @@ namespace ScriptKit
         {
 
             IntPtr result = IntPtr.Zero;
-            Span<IntPtr> argSpan = arguments.Select(x => x.Value).ToArray();
-            fixed (IntPtr* pArg = argSpan)
+            IntPtr[] argArray = new IntPtr[arguments.Length];
+            for (int i = 0; i < arguments.Length; i++)
             {
-                JsErrorCode jsErrorCode = NativeMethods.JsConstructObject(this.Value, new IntPtr(pArg), (ushort)arguments.Length, out result);
+                argArray[i + 1] = arguments[i].Value;
+            }
+            fixed (IntPtr* pArgs = argArray)
+            {
+                JsErrorCode jsErrorCode = NativeMethods.JsConstructObject(this.Value, new IntPtr(pArgs), (ushort)argArray.Length, out result);
                 JsRuntimeException.VerifyErrorCode(jsErrorCode);
             }
             return FromIntPtr(result);

@@ -1,6 +1,7 @@
 ﻿using System;
 namespace ScriptKit
 {
+    [Flags]
     public enum JsRuntimeAttributes
     {
         /// <summary>
